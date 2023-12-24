@@ -1,0 +1,728 @@
+1. Template Method Design Pattern:
+----------------------------------
+
+// AbstractClass
+public abstract class AbstractClass
+{
+    public void TemplateMethod()
+    {
+        Operation1();
+        Operation2();
+    }
+
+    protected abstract void Operation1();
+    protected abstract void Operation2();
+}
+
+// ConcreteClassA
+public class ConcreteClassA : AbstractClass
+{
+    protected override void Operation1()
+    {
+        Console.WriteLine("ConcreteClassA: Operation1");
+    }
+
+    protected override void Operation2()
+    {
+        Console.WriteLine("ConcreteClassA: Operation2");
+    }
+}
+
+// ConcreteClassB
+public class ConcreteClassB : AbstractClass
+{
+    protected override void Operation1()
+    {
+        Console.WriteLine("ConcreteClassB: Operation1");
+    }
+
+    protected override void Operation2()
+    {
+        Console.WriteLine("ConcreteClassB: Operation2");
+    }
+}
+
+// Usage
+AbstractClass classA = new ConcreteClassA();
+classA.TemplateMethod();
+
+AbstractClass classB = new ConcreteClassB();
+classB.TemplateMethod();
+
+
+
+2. Mediator Design Pattern:
+---------------------------
+
+// Mediator
+public interface IMediator
+{
+    void SendMessage(string message, Colleague colleague);
+}
+
+// Colleague
+public abstract class Colleague
+{
+    protected IMediator mediator;
+
+    public Colleague(IMediator mediator)
+    {
+        this.mediator = mediator;
+    }
+
+    public abstract void Send(string message);
+    public abstract void Receive(string message);
+}
+
+// ConcreteColleagueA
+public class ConcreteColleagueA : Colleague
+{
+    public ConcreteColleagueA(IMediator mediator) : base(mediator) { }
+
+    public override void Send(string message)
+    {
+        mediator.SendMessage(message, this);
+    }
+
+    public override void Receive(string message)
+    {
+        Console.WriteLine($"ConcreteColleagueA received: {message}");
+    }
+}
+
+// ConcreteColleagueB
+public class ConcreteColleagueB : Colleague
+{
+    public ConcreteColleagueB(IMediator mediator) : base(mediator) { }
+
+    public override void Send(string message)
+    {
+        mediator.SendMessage(message, this);
+    }
+
+    public override void Receive(string message)
+    {
+        Console.WriteLine($"ConcreteColleagueB received: {message}");
+    }
+}
+
+// ConcreteMediator
+public class ConcreteMediator : IMediator
+{
+    private ConcreteColleagueA colleagueA;
+    private ConcreteColleagueB colleagueB;
+
+    public ConcreteMediator(ConcreteColleagueA colleagueA, ConcreteColleagueB colleagueB)
+    {
+        this.colleagueA = colleagueA;
+        this.colleagueB = colleagueB;
+    }
+
+    public void SendMessage(string message, Colleague colleague)
+    {
+        if (colleague == colleagueA)
+        {
+            colleagueB.Receive(message);
+        }
+        else if (colleague == colleagueB)
+        {
+            colleagueA.Receive(message);
+        }
+    }
+}
+
+// Usage
+ConcreteColleagueA colleagueA = new ConcreteColleagueA(new ConcreteMediator(null, null));
+ConcreteColleagueB colleagueB = new ConcreteColleagueB(new ConcreteMediator(null, null));
+
+ConcreteMediator mediator = new ConcreteMediator(colleagueA, colleagueB);
+colleagueA = new ConcreteColleagueA(mediator);
+colleagueB = new ConcreteColleagueB(mediator);
+
+colleagueA.Send("Hello from ColleagueA");
+colleagueB.Send("Hi from ColleagueB");
+
+
+
+
+3. Chain of Responsibility Design Pattern:
+------------------------------------------
+
+
+// Handler
+public abstract class Handler
+{
+    protected Handler successor;
+
+    public void SetSuccessor(Handler successor)
+    {
+        this.successor = successor;
+    }
+
+    public abstract void HandleRequest(int request);
+}
+
+// ConcreteHandlerA
+public class ConcreteHandlerA : Handler
+{
+    public override void HandleRequest(int request)
+    {
+        if (request <= 10)
+        {
+            Console.WriteLine($"ConcreteHandlerA handled request: {request}");
+        }
+        else if (successor != null)
+        {
+            successor.HandleRequest(request);
+        }
+    }
+}
+
+// ConcreteHandlerB
+public class ConcreteHandlerB : Handler
+{
+    public override void HandleRequest(int request)
+    {
+        if (request > 10 && request <= 20)
+        {
+            Console.WriteLine($"ConcreteHandlerB handled request: {request}");
+        }
+        else if (successor != null)
+        {
+            successor.HandleRequest(request);
+        }
+    }
+}
+
+// Usage
+Handler handlerA = new ConcreteHandlerA();
+Handler handlerB = new ConcreteHandlerB();
+
+handlerA.SetSuccessor(handlerB);
+
+handlerA.HandleRequest(5);
+handlerA.HandleRequest(15);
+
+
+
+4. Observer Design Pattern:
+---------------------------
+
+// Observer
+public interface IObserver
+{
+    void Update(string message);
+}
+
+// Subject
+public interface ISubject
+{
+    void AddObserver(IObserver observer);
+    void RemoveObserver(IObserver observer);
+    void NotifyObservers(string message);
+}
+
+// ConcreteObserverA
+public class ConcreteObserverA : IObserver
+{
+    public void Update(string message)
+    {
+        Console.WriteLine($"ConcreteObserverA received update: {message}");
+    }
+}
+
+// ConcreteObserverB
+public class ConcreteObserverB : IObserver
+{
+    public void Update(string message)
+    {
+        Console.WriteLine($"ConcreteObserverB received update: {message}");
+    }
+}
+
+// ConcreteSubject
+public class ConcreteSubject : ISubject
+{
+    private List<IObserver> observers = new List<IObserver>();
+
+    public void AddObserver(IObserver observer)
+    {
+        observers.Add(observer);
+    }
+
+    public void RemoveObserver(IObserver observer)
+    {
+        observers.Remove(observer);
+    }
+
+    public void NotifyObservers(string message)
+    {
+        foreach (var observer in observers)
+        {
+            observer.Update(message);
+        }
+    }
+}
+
+// Usage
+ConcreteSubject subject = new ConcreteSubject();
+
+IObserver observerA = new ConcreteObserverA();
+IObserver observerB = new ConcreteObserverB();
+
+subject.AddObserver(observerA);
+subject.AddObserver(observerB);
+
+subject.NotifyObservers("Hello Observers!");
+
+
+
+
+
+5. Strategy Design Pattern:
+---------------------------
+
+// Strategy
+public interface IStrategy
+{
+    void Execute();
+}
+
+// ConcreteStrategyA
+public class ConcreteStrategyA : IStrategy
+{
+    public void Execute()
+    {
+        Console.WriteLine("ConcreteStrategyA: Execute");
+    }
+}
+
+// ConcreteStrategyB
+public class ConcreteStrategyB : IStrategy
+{
+    public void Execute()
+    {
+        Console.WriteLine("ConcreteStrategyB: Execute");
+    }
+}
+
+// Context
+public class Context
+{
+    private IStrategy strategy;
+
+    public Context(IStrategy strategy)
+    {
+        this.strategy = strategy;
+    }
+
+    public void SetStrategy(IStrategy strategy)
+    {
+        this.strategy = strategy;
+    }
+
+    public void ExecuteStrategy()
+    {
+        strategy.Execute();
+    }
+}
+
+// Usage
+IStrategy strategyA = new ConcreteStrategyA();
+IStrategy strategyB = new ConcreteStrategyB();
+
+Context context = new Context(strategyA);
+context.ExecuteStrategy();
+
+context.SetStrategy(strategyB);
+context.ExecuteStrategy();
+
+
+
+
+6. Command Design Pattern:
+--------------------------
+
+// Command
+public interface ICommand
+{
+    void Execute();
+}
+
+// Receiver
+public class Receiver
+{
+    public void Action()
+    {
+        Console.WriteLine("Receiver: Action");
+    }
+}
+
+// ConcreteCommand
+public class ConcreteCommand : ICommand
+{
+    private Receiver receiver;
+
+    public ConcreteCommand(Receiver receiver)
+    {
+        this.receiver = receiver;
+    }
+
+    public void Execute()
+    {
+        receiver.Action();
+    }
+}
+
+// Invoker
+public class Invoker
+{
+    private ICommand command;
+
+    public void SetCommand(ICommand command)
+    {
+        this.command = command;
+    }
+
+    public void ExecuteCommand()
+    {
+        command.Execute();
+    }
+}
+
+// Usage
+Receiver receiver = new Receiver();
+ICommand command = new ConcreteCommand(receiver);
+Invoker invoker = new Invoker();
+
+invoker.SetCommand(command);
+invoker.ExecuteCommand();
+
+
+
+7. State Design Pattern:
+------------------------
+
+// State
+public interface IState
+{
+    void Handle(Context context);
+}
+
+// ConcreteStateA
+public class ConcreteStateA : IState
+{
+    public void Handle(Context context)
+    {
+        Console.WriteLine("ConcreteStateA handles the request.");
+        context.State = new ConcreteStateB();
+    }
+}
+
+// ConcreteStateB
+public class ConcreteStateB : IState
+{
+    public void Handle(Context context)
+    {
+        Console.WriteLine("ConcreteStateB handles the request.");
+        context.State = new ConcreteStateA();
+    }
+}
+
+// Context
+public class Context
+{
+    private IState state;
+
+    public Context(IState state)
+    {
+        this.state = state;
+    }
+
+    public IState State
+    {
+        get { return state; }
+        set
+        {
+            state = value;
+            Console.WriteLine($"Context transitions to {state.GetType().Name}");
+        }
+    }
+
+    public void Request()
+    {
+        state.Handle(this);
+    }
+}
+
+// Usage
+IState initialState = new ConcreteStateA();
+Context context = new Context(initialState);
+
+context.Request();
+context.Request();
+context.Request();
+
+
+
+8. Visitor Design Pattern:
+--------------------------
+
+// Element
+public interface IElement
+{
+    void Accept(IVisitor visitor);
+}
+
+// ConcreteElementA
+public class ConcreteElementA : IElement
+{
+    public void Accept(IVisitor visitor)
+    {
+        visitor.VisitConcreteElementA(this);
+    }
+}
+
+// ConcreteElementB
+public class ConcreteElementB : IElement
+{
+    public void Accept(IVisitor visitor)
+    {
+        visitor.VisitConcreteElementB(this);
+    }
+}
+
+// Visitor
+public interface IVisitor
+{
+    void VisitConcreteElementA(ConcreteElementA element);
+    void VisitConcreteElementB(ConcreteElementB element);
+}
+
+// ConcreteVisitor
+public class ConcreteVisitor : IVisitor
+{
+    public void VisitConcreteElementA(ConcreteElementA element)
+    {
+        Console.WriteLine("ConcreteVisitor visits ConcreteElementA");
+    }
+
+    public void VisitConcreteElementB(ConcreteElementB element)
+    {
+        Console.WriteLine("ConcreteVisitor visits ConcreteElementB");
+    }
+}
+
+// ObjectStructure
+public class ObjectStructure
+{
+    private List<IElement> elements = new List<IElement>();
+
+    public void Attach(IElement element)
+    {
+        elements.Add(element);
+    }
+
+    public void Detach(IElement element)
+    {
+        elements.Remove(element);
+    }
+
+    public void Accept(IVisitor visitor)
+    {
+        foreach (var element in elements)
+        {
+            element.Accept(visitor);
+        }
+    }
+}
+
+// Usage
+ObjectStructure objectStructure = new ObjectStructure();
+objectStructure.Attach(new ConcreteElementA());
+objectStructure.Attach(new ConcreteElementB());
+
+IVisitor visitor = new ConcreteVisitor();
+objectStructure.Accept(visitor);
+
+
+
+9. Interpreter Design Pattern:
+------------------------------
+
+
+// Context
+public class Context
+{
+    public string Input { get; set; }
+    public int Output { get; set; }
+}
+
+// AbstractExpression
+public abstract class AbstractExpression
+{
+    public abstract void Interpret(Context context);
+}
+
+// TerminalExpression
+public class TerminalExpression : AbstractExpression
+{
+    public override void Interpret(Context context)
+    {
+        int.TryParse(context.Input, out context.Output);
+    }
+}
+
+// NonterminalExpression
+public class NonterminalExpression : AbstractExpression
+{
+    public override void Interpret(Context context)
+    {
+        context.Output = int.Parse(context.Input) * 2;
+    }
+}
+
+// Client
+public class Client
+{
+    public void Run()
+    {
+        Context context = new Context();
+        context.Input = "10";
+
+        AbstractExpression expression1 = new TerminalExpression();
+        expression1.Interpret(context);
+        Console.WriteLine($"Terminal expression result: {context.Output}");
+
+        AbstractExpression expression2 = new NonterminalExpression();
+        expression2.Interpret(context);
+        Console.WriteLine($"Nonterminal expression result: {context.Output}");
+    }
+}
+
+// Usage
+Client client = new Client();
+client.Run();
+
+
+
+
+10. Iterator Design Pattern:
+----------------------------
+
+// Iterator
+public interface IIterator<T>
+{
+    bool HasNext();
+    T Next();
+}
+
+// Aggregate
+public interface IAggregate<T>
+{
+    IIterator<T> CreateIterator();
+}
+
+// ConcreteIterator
+public class ConcreteIterator<T> : IIterator<T>
+{
+    private readonly T[] items;
+    private int position = 0;
+
+    public ConcreteIterator(T[] items)
+    {
+        this.items = items;
+    }
+
+    public bool HasNext()
+    {
+        return position < items.Length;
+    }
+
+    public T Next()
+    {
+        T currentItem = items[position];
+        position++;
+        return currentItem;
+    }
+}
+
+// ConcreteAggregate
+public class ConcreteAggregate<T> : IAggregate<T>
+{
+    private readonly T[] items;
+
+    public ConcreteAggregate(T[] items)
+    {
+        this.items = items;
+    }
+
+    public IIterator<T> CreateIterator()
+    {
+        return new ConcreteIterator<T>(items);
+    }
+}
+
+// Usage
+string[] collection = { "Item 1", "Item 2", "Item 3" };
+
+IAggregate<string> aggregate = new ConcreteAggregate<string>(collection);
+IIterator<string> iterator = aggregate.CreateIterator();
+
+while (iterator.HasNext())
+{
+    string item = iterator.Next();
+    Console.WriteLine(item);
+}
+
+
+
+11. Memento Design Pattern:
+---------------------------
+
+// Memento
+public class Memento
+{
+    public string State { get; }
+
+    public Memento(string state)
+    {
+        State = state;
+    }
+}
+
+// Originator
+public class Originator
+{
+    public string State { get; set; }
+
+    public Memento CreateMemento()
+    {
+        return new Memento(State);
+    }
+
+    public void SetMemento(Memento memento)
+    {
+        State = memento.State;
+    }
+}
+
+// Caretaker
+public class Caretaker
+{
+    public Memento Memento { get; set; }
+}
+
+// Usage
+Originator originator = new Originator();
+originator.State = "State 1";
+
+Caretaker caretaker = new Caretaker();
+caretaker.Memento = originator.CreateMemento();
+
+originator.State = "State 2";
+
+originator.SetMemento(caretaker.Memento);
+Console.WriteLine($"Restored State: {originator.State}");
+
+
